@@ -38,14 +38,14 @@ bool bst_search(bst_node_t *tree, char key, int *value) {
 
   // found
   if (tree->key == key) {
-    *value = key;
+    *value = tree->value;
     return true;
   }
 
   // go left/right
   return tree->key > key
-    ? bst_search(tree, key, value)
-    : bst_search(tree, key, value);
+    ? bst_search(tree->left, key, value)
+    : bst_search(tree->right, key, value);
 }
 
 /*
@@ -70,7 +70,7 @@ void bst_insert(bst_node_t **tree, char key, int value) {
     }
     n->left = NULL;
     n->right  = NULL;
-    n->key = value;
+    n->value = value;
     n->key = key;
     *tree = n;
     return;
@@ -208,9 +208,9 @@ void bst_preorder(bst_node_t *tree, bst_items_t *items) {
   }
 
   // add the nodes to the list in the correct order
+  bst_add_node_to_items(tree, items);
   bst_preorder(tree->left, items);
   bst_preorder(tree->right, items);
-  bst_add_node_to_items(tree, items);
 }
 
 /*
@@ -227,9 +227,9 @@ void bst_inorder(bst_node_t *tree, bst_items_t *items) {
   }
 
   // add the nodes to the list in the correct order
-  bst_preorder(tree->left, items);
+  bst_inorder(tree->left, items);
   bst_add_node_to_items(tree, items);
-  bst_preorder(tree->right, items);
+  bst_inorder(tree->right, items);
 }
 
 /*
@@ -246,7 +246,7 @@ void bst_postorder(bst_node_t *tree, bst_items_t *items) {
   }
 
   // add the nodes to the list in the correct order
+  bst_postorder(tree->left, items);
+  bst_postorder(tree->right, items);
   bst_add_node_to_items(tree, items);
-  bst_preorder(tree->left, items);
-  bst_preorder(tree->right, items);
 }

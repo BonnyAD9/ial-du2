@@ -5,16 +5,19 @@
 #include <stdio.h>
 
 #define TEST(NAME, DESCRIPTION)                                                \
-  void NAME() {                                                                \
+  bool NAME() {                                                                \
     printf("[%s] %s\n", #NAME, DESCRIPTION);                                   \
     bst_node_t *test_tree;                                                     \
-    bst_items_t *test_items = bst_init_items();
+    bst_items_t *test_items = bst_init_items();                                \
+    bool success = true;
 
 #define ENDTEST                                                                \
   printf("\n");                                                                \
   bst_reset_items(test_items);                                                 \
   free(test_items);                                                            \
   bst_dispose(&test_tree);                                                     \
+  if (!success) printf("\x1b[91mFAILED\x1b[0m\n");                               \
+  return success;                                                              \
   }
 
 typedef enum direction { left, right, none } direction_t;

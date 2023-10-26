@@ -2,6 +2,7 @@
 #include "test_util.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 const int base_data_count = 15;
 const char base_keys[] = {'H', 'D', 'L', 'B', 'F', 'J', 'N', 'A',
@@ -23,151 +24,221 @@ void init_test() {
 }
 
 TEST(test_tree_init, "Initialize the tree")
-bst_init(&test_tree);
+  bst_init(&test_tree);
+  success = test_tree == NULL;
 ENDTEST
 
 TEST(test_tree_dispose_empty, "Dispose the tree")
-bst_init(&test_tree);
-bst_dispose(&test_tree);
+  bst_init(&test_tree);
+  bst_dispose(&test_tree);
+  success = test_tree == NULL;
 ENDTEST
 
 TEST(test_tree_search_empty, "Search in an empty tree (A)")
-bst_init(&test_tree);
-int result;
-bst_search(test_tree, 'A', &result);
+  bst_init(&test_tree);
+  int result;
+  success = !bst_search(test_tree, 'A', &result);
 ENDTEST
 
 TEST(test_tree_insert_root, "Insert an item (H,1)")
-bst_init(&test_tree);
-bst_insert(&test_tree, 'H', 1);
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert(&test_tree, 'H', 1);
+  bst_print_tree(test_tree);
+  success = test_tree->key == 'H' && test_tree->value == 1;
 ENDTEST
 
 TEST(test_tree_search_root, "Search in a single node tree (H)")
-bst_init(&test_tree);
-bst_insert(&test_tree, 'H', 1);
-int result;
-bst_search(test_tree, 'H', &result);
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert(&test_tree, 'H', 1);
+  int result;
+  success = bst_search(test_tree, 'H', &result) && result == 1;
+  bst_print_tree(test_tree);
 ENDTEST
 
 TEST(test_tree_update_root, "Update a node in a single node tree (H,1)->(H,8)")
-bst_init(&test_tree);
-bst_insert(&test_tree, 'H', 1);
-bst_print_tree(test_tree);
-bst_insert(&test_tree, 'H', 8);
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert(&test_tree, 'H', 1);
+  bst_print_tree(test_tree);
+  bst_insert(&test_tree, 'H', 8);
+  bst_print_tree(test_tree);
+  success = test_tree->key == 'H' && test_tree->value == 8;
 ENDTEST
 
 TEST(test_tree_insert_many, "Insert many values")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_print_tree(test_tree);
+  for (size_t i = 0; i < base_data_count; ++i) {
+    int res;
+    success &= bst_search(test_tree, base_keys[i], &res) && res == base_values[i];
+  }
 ENDTEST
 
 TEST(test_tree_search, "Search for an item deeper in the tree (A)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-int result;
-bst_search(test_tree, 'A', &result);
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  int result;
+  success = bst_search(test_tree, 'A', &result) && result == 1;
+  bst_print_tree(test_tree);
 ENDTEST
 
 TEST(test_tree_search_missing, "Search for a missing key (X)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-int result;
-bst_search(test_tree, 'X', &result);
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  int result;
+  success = !bst_search(test_tree, 'X', &result);
+  bst_print_tree(test_tree);
 ENDTEST
 
 TEST(test_tree_delete_leaf, "Delete a leaf node (A)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_print_tree(test_tree);
-bst_delete(&test_tree, 'A');
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_print_tree(test_tree);
+  bst_delete(&test_tree, 'A');
+  bst_print_tree(test_tree);
+  for (size_t i = 0; i < base_data_count; ++i) {
+    int res;
+    if (base_keys[i] == 'A') {
+      success &= !bst_search(test_tree, base_keys[i], &res);
+    } else {
+      success &= bst_search(test_tree, base_keys[i], &res) && res == base_values[i];
+    }
+  }
 ENDTEST
 
 TEST(test_tree_delete_left_subtree, "Delete a node with only left subtree (R)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_insert_many(&test_tree, additional_keys, additional_values,
-                additional_data_count);
-bst_print_tree(test_tree);
-bst_delete(&test_tree, 'R');
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_insert_many(&test_tree, additional_keys, additional_values,
+                  additional_data_count);
+  bst_print_tree(test_tree);
+  bst_delete(&test_tree, 'R');
+  bst_print_tree(test_tree);
+  for (size_t i = 0; i < base_data_count; ++i) {
+    int res;
+    if (base_keys[i] == 'R') {
+      success &= !bst_search(test_tree, base_keys[i], &res);
+    } else {
+      success &= bst_search(test_tree, base_keys[i], &res) && res == base_values[i];
+    }
+  }
 ENDTEST
 
 TEST(test_tree_delete_right_subtree,
      "Delete a node with only right subtree (X)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_insert_many(&test_tree, additional_keys, additional_values,
-                additional_data_count);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_insert_many(&test_tree, additional_keys, additional_values,
+                  additional_data_count);
 
-bst_print_tree(test_tree);
-bst_delete(&test_tree, 'X');
-bst_print_tree(test_tree);
+  bst_print_tree(test_tree);
+  bst_delete(&test_tree, 'X');
+  bst_print_tree(test_tree);
+  for (size_t i = 0; i < base_data_count; ++i) {
+    int res;
+    if (base_keys[i] == 'X') {
+      success &= !bst_search(test_tree, base_keys[i], &res);
+    } else {
+      success &= bst_search(test_tree, base_keys[i], &res) && res == base_values[i];
+    }
+  }
 ENDTEST
 
 TEST(test_tree_delete_both_subtrees, "Delete a node with both subtrees (L)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_insert_many(&test_tree, additional_keys, additional_values,
-                additional_data_count);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_insert_many(&test_tree, additional_keys, additional_values,
+                  additional_data_count);
 
-bst_print_tree(test_tree);
-bst_delete(&test_tree, 'L');
-bst_print_tree(test_tree);
+  bst_print_tree(test_tree);
+  bst_delete(&test_tree, 'L');
+  bst_print_tree(test_tree);
+  for (size_t i = 0; i < base_data_count; ++i) {
+    int res;
+    if (base_keys[i] == 'L') {
+      success &= !bst_search(test_tree, base_keys[i], &res);
+    } else {
+      success &= bst_search(test_tree, base_keys[i], &res) && res == base_values[i];
+    }
+  }
 ENDTEST
 
 TEST(test_tree_delete_missing, "Delete a node that doesn't exist (U)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_print_tree(test_tree);
-bst_delete(&test_tree, 'U');
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_print_tree(test_tree);
+  bst_delete(&test_tree, 'U');
+  bst_print_tree(test_tree);
+  for (size_t i = 0; i < base_data_count; ++i) {
+    int res;
+    if (base_keys[i] == 'U') {
+      success &= !bst_search(test_tree, base_keys[i], &res);
+    } else {
+      success &= bst_search(test_tree, base_keys[i], &res) && res == base_values[i];
+    }
+  }
 ENDTEST
 
 TEST(test_tree_delete_root, "Delete the root node (H)")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_print_tree(test_tree);
-bst_delete(&test_tree, 'H');
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_print_tree(test_tree);
+  bst_delete(&test_tree, 'H');
+  bst_print_tree(test_tree);
+  for (size_t i = 0; i < base_data_count; ++i) {
+    int res;
+    if (base_keys[i] == 'H') {
+      success &= !bst_search(test_tree, base_keys[i], &res);
+    } else {
+      success &= bst_search(test_tree, base_keys[i], &res) && res == base_values[i];
+    }
+  }
 ENDTEST
 
 TEST(test_tree_dispose_filled, "Dispose the whole tree")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
-bst_print_tree(test_tree);
-bst_dispose(&test_tree);
-bst_print_tree(test_tree);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+  bst_print_tree(test_tree);
+  bst_dispose(&test_tree);
+  bst_print_tree(test_tree);
+  success = test_tree == NULL;
 ENDTEST
 
 TEST(test_tree_preorder, "Traverse the tree using preorder")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
-bst_preorder(test_tree, test_items);
-bst_print_tree(test_tree);
-bst_print_items(test_items);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
+  bst_preorder(test_tree, test_items);
+  bst_print_tree(test_tree);
+  bst_print_items(test_items);
+  int expected[] = { 1, 2, 3, 4, 5 };
+  for (size_t i = 0; i < test_items->size; ++i) {
+    success &= test_items->nodes[i]->value == expected[i];
+  }
 ENDTEST
 
 TEST(test_tree_inorder, "Traverse the tree using inorder")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
-bst_inorder(test_tree, test_items);
-bst_print_tree(test_tree);
-bst_print_items(test_items);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
+  bst_inorder(test_tree, test_items);
+  bst_print_tree(test_tree);
+  bst_print_items(test_items);
+  char prev = CHAR_MIN;
+  for (size_t i = 0; i < test_items->size; ++i) {
+    success &= test_items->nodes[i]->key > prev;
+    prev = test_items->nodes[i]->key;
+  }
 ENDTEST
 
 TEST(test_tree_postorder, "Traverse the tree using postorder")
-bst_init(&test_tree);
-bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
-bst_postorder(test_tree, test_items);
-bst_print_tree(test_tree);
-bst_print_items(test_items);
+  bst_init(&test_tree);
+  bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
+  bst_postorder(test_tree, test_items);
+  bst_print_tree(test_tree);
+  bst_print_items(test_items);
+  int expected[] = { 3, 4, 2, 5, 1 };
+  for (size_t i = 0; i < test_items->size; ++i) {
+    success &= test_items->nodes[i]->value == expected[i];
+  }
 ENDTEST
 
 #ifdef EXA
@@ -190,25 +261,33 @@ ENDTEST
 int main(int argc, char *argv[]) {
   init_test();
 
-  test_tree_init();
-  test_tree_dispose_empty();
-  test_tree_search_empty();
-  test_tree_insert_root();
-  test_tree_search_root();
-  test_tree_update_root();
-  test_tree_insert_many();
-  test_tree_search();
-  test_tree_search_missing();
-  test_tree_delete_leaf();
-  test_tree_delete_left_subtree();
-  test_tree_delete_right_subtree();
-  test_tree_delete_both_subtrees();
-  test_tree_delete_missing();
-  test_tree_delete_root();
-  test_tree_dispose_filled();
-  test_tree_preorder();
-  test_tree_inorder();
-  test_tree_postorder();
+  bool success = true;
+
+  success &= test_tree_init();
+  success &= test_tree_dispose_empty();
+  success &= test_tree_search_empty();
+  success &= test_tree_insert_root();
+  success &= test_tree_search_root();
+  success &= test_tree_update_root();
+  success &= test_tree_insert_many();
+  success &= test_tree_search();
+  success &= test_tree_search_missing();
+  success &= test_tree_delete_leaf();
+  success &= test_tree_delete_left_subtree();
+  success &= test_tree_delete_right_subtree();
+  success &= test_tree_delete_both_subtrees();
+  success &= test_tree_delete_missing();
+  success &= test_tree_delete_root();
+  success &= test_tree_dispose_filled();
+  success &= test_tree_preorder();
+  success &= test_tree_inorder();
+  success &= test_tree_postorder();
+
+  if (success) {
+    printf("\x1b[92mALL PASS\x1b[0m\n");
+  } else {
+    printf("\x1b[91mSOME FAIL\x1b[0m\n");
+  }
 
 #ifdef EXA
   test_letter_count();
