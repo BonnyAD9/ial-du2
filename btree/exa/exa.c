@@ -42,16 +42,17 @@ void letter_count(bst_node_t **tree, char *input) {
 // will be balanced
 void _bst_balance(bst_node_t **tree, bst_node_t **nodes, size_t len) {
     if (len == 0) {
+        *tree = NULL;
         return;
     }
 
     // insert the middle node
     size_t p = len / 2;
-    bst_insert(tree, nodes[p]->key, nodes[p]->value);
+    *tree = nodes[p];
 
     // inserts the nodes for the left and right subtrees
-    _bst_balance(tree, nodes, p);
-    _bst_balance(tree, nodes + p + 1, len - p - 1);
+    _bst_balance(&(*tree)->left, nodes, p);
+    _bst_balance(&(*tree)->right, nodes + p + 1, len - p - 1);
 }
 
 /**
@@ -67,15 +68,10 @@ void _bst_balance(bst_node_t **tree, bst_node_t **nodes, size_t len) {
 void bst_balance(bst_node_t **tree) {
     // init
     bst_items_t items = { 0 };
-    bst_node_t *res;
-    bst_init(&res);
 
     // walk trough the tree and than insert the items in the correct order
     bst_inorder(*tree, &items);
-    _bst_balance(&res, items.nodes, items.size);
+    _bst_balance(tree, items.nodes, items.size);
 
-    bst_dispose(tree);
     free(items.nodes);
-
-    *tree = res;
 }
