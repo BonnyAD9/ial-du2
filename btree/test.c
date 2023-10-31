@@ -211,6 +211,7 @@ TEST(test_tree_preorder, "Traverse the tree using preorder")
   bst_print_tree(test_tree);
   bst_print_items(test_items);
   int expected[] = { 1, 2, 3, 4, 5 };
+  success = test_items->size == traversal_data_count;
   for (size_t i = 0; i < test_items->size; ++i) {
     success &= test_items->nodes[i]->value == expected[i];
   }
@@ -223,6 +224,7 @@ TEST(test_tree_inorder, "Traverse the tree using inorder")
   bst_print_tree(test_tree);
   bst_print_items(test_items);
   char prev = CHAR_MIN;
+  success = test_items->size == traversal_data_count;
   for (size_t i = 0; i < test_items->size; ++i) {
     success &= test_items->nodes[i]->key > prev;
     prev = test_items->nodes[i]->key;
@@ -236,6 +238,7 @@ TEST(test_tree_postorder, "Traverse the tree using postorder")
   bst_print_tree(test_tree);
   bst_print_items(test_items);
   int expected[] = { 3, 4, 2, 5, 1 };
+  success = test_items->size == traversal_data_count;
   for (size_t i = 0; i < test_items->size; ++i) {
     success &= test_items->nodes[i]->value == expected[i];
   }
