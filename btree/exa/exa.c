@@ -41,6 +41,7 @@ void letter_count(bst_node_t **tree, char *input) {
 // Inserts `nodes` into `tree` in such order, that if the tree is empty, it
 // will be balanced
 void _bst_balance(bst_node_t **tree, bst_node_t **nodes, size_t len) {
+    // nothing to balance, tree is empty
     if (len == 0) {
         *tree = NULL;
         return;
