@@ -234,6 +234,10 @@ void bst_preorder(bst_node_t *tree, bst_items_t *items) {
  * vlastních pomocných funkcí.
  */
 void bst_leftmost_inorder(bst_node_t *tree, stack_bst_t *to_visit) {
+  while (tree) {
+    stack_bst_push(to_visit, tree);
+    tree = tree->left;
+  }
 }
 
 /*
@@ -245,6 +249,15 @@ void bst_leftmost_inorder(bst_node_t *tree, stack_bst_t *to_visit) {
  * zásobníku uzlů a bez použití vlastních pomocných funkcí.
  */
 void bst_inorder(bst_node_t *tree, bst_items_t *items) {
+  stack_bst_t nodes;
+  stack_bst_init(&nodes);
+  bst_leftmost_inorder(tree, &nodes);
+
+  while (!stack_bst_empty(&nodes)) {
+    tree = stack_bst_pop(&nodes);
+    bst_add_node_to_items(tree, items);
+    bst_leftmost_inorder(tree->right, &nodes);
+  }
 }
 
 /*
@@ -259,6 +272,11 @@ void bst_inorder(bst_node_t *tree, bst_items_t *items) {
  */
 void bst_leftmost_postorder(bst_node_t *tree, stack_bst_t *to_visit,
                             stack_bool_t *first_visit) {
+  while (tree) {
+    stack_bst_push(to_visit, tree);
+    stack_bool_push(first_visit, true);
+    tree = tree->left;
+  }
 }
 
 /*
@@ -270,4 +288,22 @@ void bst_leftmost_postorder(bst_node_t *tree, stack_bst_t *to_visit,
  * zásobníku uzlů a bool hodnot a bez použití vlastních pomocných funkcí.
  */
 void bst_postorder(bst_node_t *tree, bst_items_t *items) {
+  stack_bst_t nodes;
+  stack_bool_t first_visit;
+  stack_bst_init(&nodes);
+  stack_bool_init(&first_visit);
+  bst_leftmost_postorder(tree, &nodes, &first_visit);
+
+  while (!stack_bst_empty(&nodes)) {
+    tree = stack_bst_pop(&nodes);
+
+    if (!stack_bool_pop(&first_visit)) {
+      bst_add_node_to_items(tree, items);
+      continue;
+    }
+
+    stack_bool_push(&first_visit, false);
+    stack_bst_push(&nodes, tree);
+    bst_leftmost_postorder(tree->right, &nodes, &first_visit);
+  }
 }
