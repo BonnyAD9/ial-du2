@@ -32,6 +32,7 @@ int get_hash(char *key) {
  * Inicializace tabulky — zavolá sa před prvním použitím tabulky.
  */
 void ht_init(ht_table_t *table) {
+  // cast to more reasonable type
   ht_item_t **tab = (ht_item_t **)table;
 
   for (int i = 0; i < HT_SIZE; ++i) {
@@ -39,8 +40,9 @@ void ht_init(ht_table_t *table) {
   }
 }
 
-// Gets pointer to position for the key in the item
+// Gets pointer to position of item with the key
 ht_item_t **ht_find(ht_table_t *table, char *key) {
+  // cast to more reasonable type
   ht_item_t **tab = (ht_item_t **)table;
   ht_item_t **item = &tab[get_hash(key)];
 
@@ -79,10 +81,12 @@ void ht_insert(ht_table_t *table, char *key, float value) {
   ht_item_t *item = *i;
 
   if (item) {
+    // modify existing
     item->value = value;
     return;
   }
 
+  // create new item
   item = malloc(sizeof(*item));
   if (!item) {
     return;
@@ -117,6 +121,8 @@ float *ht_get(ht_table_t *table, char *key) {
  * Při implementaci NEPOUŽÍVEJTE funkci ht_search.
  */
 void ht_delete(ht_table_t *table, char *key) {
+  // I cannot use ht_search, but it wouldn't make sense to use it, so I use
+  // ht_find
   ht_item_t **i = ht_find(table, key);
   ht_item_t *item = *i;
 
@@ -133,6 +139,7 @@ void ht_delete(ht_table_t *table, char *key) {
  * inicializaci.
  */
 void ht_delete_all(ht_table_t *table) {
+  // cast to more reasonable type
   ht_item_t **tab = (ht_item_t **)table;
 
   for (int i = 0; i < HT_SIZE; ++i) {
