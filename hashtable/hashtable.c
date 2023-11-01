@@ -32,6 +32,25 @@ int get_hash(char *key) {
  * Inicializace tabulky — zavolá sa před prvním použitím tabulky.
  */
 void ht_init(ht_table_t *table) {
+  ht_item_t **tab = (ht_item_t **)table;
+
+  for (int i = 0; i < HT_SIZE; ++i) {
+    tab[i] = NULL;
+  }
+}
+
+// Gets pointer to position for the key in the item
+ht_item_t **ht_find(ht_table_t *table, char *key) {
+  ht_item_t **tab = (ht_item_t **)table;
+  ht_item_t **item = &tab[get_hash(key)];
+
+  for (; *item; item = &(*item)->next) {
+    if (strcmp(key, (*item)->key) == 0) {
+      return item;
+    }
+  }
+
+  return item;
 }
 
 /*
@@ -41,7 +60,7 @@ void ht_init(ht_table_t *table) {
  * hodnotu NULL.
  */
 ht_item_t *ht_search(ht_table_t *table, char *key) {
-  return NULL;
+  return *ht_find(table, key);
 }
 
 /*
@@ -53,6 +72,27 @@ ht_item_t *ht_search(ht_table_t *table, char *key) {
  * synonym zvolte nejefektivnější možnost a vložte prvek na začátek seznamu.
  */
 void ht_insert(ht_table_t *table, char *key, float value) {
+  // I used ht_find instead of ht_search, because this way I need only one
+  // lookup in the table.
+  ht_item_t **i = ht_find(table, key);
+
+  ht_item_t *item = *i;
+
+  if (item) {
+    item->value = value;
+    return;
+  }
+
+  item = malloc(sizeof(*item));
+  if (!item) {
+    return;
+  }
+
+  item->key = key;
+  item->value = value;
+  item->next = NULL;
+
+  *i = item;
 }
 
 /*
@@ -64,7 +104,8 @@ void ht_insert(ht_table_t *table, char *key, float value) {
  * Při implementaci využijte funkci ht_search.
  */
 float *ht_get(ht_table_t *table, char *key) {
-  return NULL;
+  ht_item_t *i = ht_search(table, key);
+  return i ? &i->value : NULL;
 }
 
 /*
@@ -76,13 +117,31 @@ float *ht_get(ht_table_t *table, char *key) {
  * Při implementaci NEPOUŽÍVEJTE funkci ht_search.
  */
 void ht_delete(ht_table_t *table, char *key) {
+  ht_item_t **i = ht_find(table, key);
+  ht_item_t *item = *i;
+
+  if (item) {
+    *i = item->next;
+    free(item);
+  }
 }
 
 /*
  * Smazání všech prvků z tabulky.
  *
- * Funkce korektně uvolní všechny alokované zdroje a uvede tabulku do stavu po 
+ * Funkce korektně uvolní všechny alokované zdroje a uvede tabulku do stavu po
  * inicializaci.
  */
 void ht_delete_all(ht_table_t *table) {
+  ht_item_t **tab = (ht_item_t **)table;
+
+  for (int i = 0; i < HT_SIZE; ++i) {
+    ht_item_t *item = tab[i];
+    while (item) {
+      ht_item_t *to_free = item;
+      item = item->next;
+      free(to_free);
+    }
+    tab[i] = NULL;
+  }
 }

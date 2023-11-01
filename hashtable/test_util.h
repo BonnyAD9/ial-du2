@@ -4,10 +4,11 @@
 #include "hashtable.h"
 
 #define TEST(NAME, DESCRIPTION)                                                \
-  void NAME() {                                                                \
+  bool NAME() {                                                                \
     printf("[%s] %s\n", #NAME, DESCRIPTION);                                   \
     ht_table_t *test_table;                                                    \
-    init_test_table(&test_table);
+    init_test_table(&test_table);                                              \
+    bool success = true;
 
 #define ENDTEST                                                                \
   printf("\n");                                                                \
@@ -15,6 +16,8 @@
   ht_delete_all(test_table);                                                   \
   free(test_table);                                                            \
   printf("\n");                                                                \
+  if (!success) printf("\x1b[91mFAILED\x1b[0m\n");                             \
+  return success;                                                              \
   }
 
 extern ht_item_t *uninitialized_item;
